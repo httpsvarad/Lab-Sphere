@@ -1,10 +1,8 @@
 // utils/supabase/server.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '';
+import type { cookiesToSet } from '@/middleware';
+import { supabaseKey, supabaseUrl } from '@/middleware';
 
 export const createClient = async (cookieStore: ReturnType<typeof cookies>) => {
   if (!supabaseUrl || !supabaseKey) {
@@ -16,7 +14,7 @@ export const createClient = async (cookieStore: ReturnType<typeof cookies>) => {
       async getAll() {
         return (await cookieStore).getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: cookiesToSet[]) {
         try {
           cookiesToSet.forEach(async ({ name, value, options }) =>
             (await cookieStore).set(name, value, options)

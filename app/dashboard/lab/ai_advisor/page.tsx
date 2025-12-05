@@ -248,7 +248,7 @@ import {
   AlertCircle,
   Zap,
 } from 'lucide-react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/utils/supabase/client';
 import { LabContext } from '@/app/context/LabContext';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -264,8 +264,7 @@ interface Outbreak {
 
 function AI_AD() {
   const labId = useContext(LabContext)?.labId;
-  const supabase = createClientComponentClient();
-
+  const supabase = createClient();
   const [outbreaks, setOutbreaks] = useState<Outbreak[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);

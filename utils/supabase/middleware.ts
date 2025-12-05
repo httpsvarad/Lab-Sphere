@@ -1,9 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || '';
+import type { cookiesToSet } from '@/middleware';
+import { supabaseKey, supabaseUrl } from '@/middleware';
 
 // NOTE: below code is necessary duplicate due to middleware context being different from server context
 export const createClient = async (request: NextRequest) => {
@@ -25,7 +23,7 @@ export const createClient = async (request: NextRequest) => {
         // we check req header instead of cookies here // main difference
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: cookiesToSet[]) {
         cookiesToSet.forEach(({ name, value, options }) => {
           supabaseResponse.cookies.set(name, value, options);
         });
