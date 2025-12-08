@@ -61,6 +61,55 @@ export const POSReport = ({
   const tax = calculateTax(subtotal);
   const total = calculateTotal(subtotal, tax);
 
+  // Get payment data from booking
+  const getPaymentData = () => {
+    if (!booking.payments || booking.payments.length === 0) {
+      return {
+        method: 'Not Paid',
+        transactionId: 'N/A',
+        amount: 0,
+        status: 'Pending',
+        paidAt: null,
+      };
+    }
+
+    // Get the latest payment (assuming multiple payments possible)
+    const latestPayment = booking.payments[booking.payments.length - 1];
+
+    // Determine payment method based on status or other logic
+    // You might need to add a paymentMethod field to your Payment model
+    // For now, we'll use a simple mapping
+    let paymentMethod = 'Cash'; // default
+    if (
+      latestPayment.status &&
+      latestPayment.status.toLowerCase().includes('card')
+    ) {
+      paymentMethod = 'Card';
+    } else if (
+      latestPayment.status &&
+      latestPayment.status.toLowerCase().includes('online')
+    ) {
+      paymentMethod = 'Online';
+    } else if (
+      latestPayment.status &&
+      latestPayment.status.toLowerCase().includes('upi')
+    ) {
+      paymentMethod = 'UPI';
+    }
+
+    return {
+      method: paymentMethod,
+      transactionId:
+        latestPayment.id ||
+        `TXN-${latestPayment.id?.substring(0, 8).toUpperCase()}`,
+      amount: latestPayment.amount || 0,
+      status: latestPayment.status || 'Completed',
+      paidAt: latestPayment.paidAt ? formatDate(latestPayment.paidAt) : 'N/A',
+    };
+  };
+
+  const paymentData = getPaymentData();
+
   return (
     <div
       className="page-break print:min-h-[297mm] font-inter"
@@ -190,18 +239,9 @@ export const POSReport = ({
                   <th className="px-4 py-3 text-left font-medium text-gray-700 uppercase tracking-wider w-2/3">
                     Test Name
                   </th>
-                  {/* <th className="px-3 py-2 text-left font-medium text-gray-700 uppercase tracking-wider">
-                    Code
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-700 uppercase tracking-wider">
-                    Category
-                  </th> */}
                   <th className="px-4 py-3 text-right font-medium text-gray-700 uppercase tracking-wider w-1/3">
                     Amount (₹)
                   </th>
-                  {/* <th className="px-3 py-2 text-left font-medium text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -213,20 +253,9 @@ export const POSReport = ({
                     <td className="px-4 py-3 text-gray-800 font-medium">
                       {test.name}
                     </td>
-                    {/* <td className="px-3 py-2 text-gray-600">
-                      {test.code || 'N/A'}
-                    </td>
-                    <td className="px-3 py-2 text-gray-600">
-                      {test.category || 'General'}
-                    </td> */}
                     <td className="px-4 py-3 text-gray-900 font-semibold text-right">
                       ₹{test.price?.toFixed(2) || '0.00'}
                     </td>
-                    {/* <td className="px-3 py-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {test.status || 'Completed'}
-                      </span>
-                    </td> */}
                   </tr>
                 ))}
               </tbody>
@@ -262,9 +291,6 @@ export const POSReport = ({
                     <th className="px-4 py-3 text-right font-medium text-gray-700 uppercase tracking-wider w-1/4">
                       Amount (₹)
                     </th>
-                    {/* <th className="px-3 py-2 text-left font-medium text-gray-700 uppercase tracking-wider">
-                      Status
-                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -282,11 +308,6 @@ export const POSReport = ({
                       <td className="px-4 py-3 text-gray-900 font-semibold text-right">
                         ₹{addon.price?.toFixed(2) || '0.00'}
                       </td>
-                      {/* <td className="px-3 py-2">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {addon.status || 'Completed'}
-                        </span>
-                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -315,7 +336,7 @@ export const POSReport = ({
           </div>
         </div>
 
-        {/* Payment Method */}
+        {/* Payment Method - Updated with real data */}
         <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
           <h4 className="font-semibold text-gray-700 mb-3 text-sm">
             PAYMENT INFORMATION
@@ -324,15 +345,47 @@ export const POSReport = ({
             <div>
               <p className="text-gray-600 text-xs mb-1">Payment Method:</p>
               <div className="flex items-center space-x-2">
-                {/* <Banknote className="w-4 h-4 text-green-600" /> */}
-                <span className="font-medium">Cash</span>
+                {/* {paymentData.method === 'Card' ? (
+                  <CreditCard className="w-4 h-4 text-blue-600" />
+                ) : paymentData.method === 'Online' ? (
+                  <CreditCard className="w-4 h-4 text-green-600" />
+                ) : paymentData.method === 'UPI' ? (
+                  <CreditCard className="w-4 h-4 text-purple-600" />
+                ) : (
+                  <Banknote className="w-4 h-4 text-green-600" />
+                )} */}
+                <span className="font-medium">{paymentData.method}</span>
               </div>
+              {paymentData.status && (
+                <div className="mt-1">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      paymentData.status === 'Completed' ||
+                      paymentData.status === 'Paid'
+                        ? 'bg-green-100 text-green-800'
+                        : paymentData.status === 'Pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {paymentData.status}
+                  </span>
+                </div>
+              )}
             </div>
             <div>
               <p className="text-gray-600 text-xs mb-1">Transaction ID:</p>
-              <p className="font-mono text-sm">
-                TXN{Date.now().toString(36).toUpperCase()}
-              </p>
+              <p className="font-mono text-sm">{paymentData.transactionId}</p>
+              {paymentData.paidAt !== 'N/A' && (
+                <p className="text-gray-600 text-xs mt-1">
+                  Paid on: {paymentData.paidAt}
+                </p>
+              )}
+              {paymentData.amount > 0 && (
+                <p className="text-gray-600 text-xs mt-1">
+                  Amount Paid: ₹{paymentData.amount.toFixed(2)}
+                </p>
+              )}
             </div>
           </div>
         </div>
