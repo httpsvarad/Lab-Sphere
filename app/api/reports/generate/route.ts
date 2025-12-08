@@ -41,11 +41,9 @@ export async function POST(request: NextRequest) {
       });
     } catch (error: any) {
       if (error.code === 'P2021') {
-        // Use default customization
       }
     }
 
-    // Get actual patient and booking data
     const patient = await db.patient.findUnique({
       where: { id: patientId },
       include: {
@@ -69,6 +67,7 @@ export async function POST(request: NextRequest) {
           },
         },
         lab_time_slots: true,
+        payments: true,
       },
     });
 
@@ -79,7 +78,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate comprehensive test results with realistic data
     const testResults = await generateTestResults(booking.booking_tests);
 
     const reportData = {
@@ -119,6 +117,7 @@ export async function POST(request: NextRequest) {
         tests: booking.booking_tests.map((bt) => bt.tests),
         addons: booking.booking_addons.map((ba) => ba.addons),
         timeSlot: booking.lab_time_slots,
+        payments: booking.payments,
       },
       testResults,
       generatedAt: new Date().toISOString(),
@@ -140,7 +139,6 @@ export async function POST(request: NextRequest) {
 }
 
 async function generateTestResults(bookingTests: any[]) {
-  // Generate realistic test results based on test types
   const results = [];
 
   for (const bt of bookingTests) {
@@ -153,7 +151,6 @@ async function generateTestResults(bookingTests: any[]) {
       status: 'completed',
     };
 
-    // Generate realistic values based on test category
     switch (category) {
       case 'hematology':
         result.values = [
