@@ -280,9 +280,9 @@ export default function SignupPage() {
             </form>
 
             <div className="flex items-center my-4">
-              <div className="flex-grow h-px bg-gray-300" />
+              <div className="grow h-px bg-gray-300" />
               <span className="mx-2 text-gray-400 text-sm">OR</span>
-              <div className="flex-grow h-px bg-gray-300" />
+              <div className="grow h-px bg-gray-300" />
             </div>
 
             <div className="flex gap-4 justify-center">
